@@ -2,13 +2,15 @@ import NextAuth from "next-auth"
 import Nodemailer from "next-auth/providers/nodemailer"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { PrismaClient } from "@prisma/client"
-import { Pool } from 'pg'
-import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaNeon } from "@prisma/adapter-neon"
+import { Pool, neonConfig } from "@neondatabase/serverless"
+import ws from "ws"
 import nodemailer from "nodemailer"
 
-const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_l45aCcbZFAqu@ep-plain-frost-b2dxi9ds-pooler.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-const pool = new Pool({ connectionString })
-const adapter = new PrismaPg(pool)
+neonConfig.webSocketConstructor = ws
+
+const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_l45aCcbZFAqu@ep-plain-frost-b2dxi9ds-pooler.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+const adapter = new PrismaNeon({ connectionString })
 export const prisma = new PrismaClient({ adapter })
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

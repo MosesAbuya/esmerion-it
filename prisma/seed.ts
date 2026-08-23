@@ -1,13 +1,14 @@
 import { PrismaClient } from '@prisma/client'
-import { Pool } from 'pg'
-import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool, neonConfig } from '@neondatabase/serverless'
+import { PrismaNeon } from '@prisma/adapter-neon'
+import ws from 'ws'
 import dotenv from 'dotenv'
 
 dotenv.config()
+neonConfig.webSocketConstructor = ws
 
-const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_l45aCcbZFAqu@ep-plain-frost-b2dxi9ds-pooler.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-const pool = new Pool({ connectionString })
-const adapter = new PrismaPg(pool)
+const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_l45aCcbZFAqu@ep-plain-frost-b2dxi9ds-pooler.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+const adapter = new PrismaNeon({ connectionString })
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
