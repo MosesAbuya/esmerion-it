@@ -13,7 +13,8 @@ const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:
 const adapter = new PrismaNeon({ connectionString })
 export const prisma = new PrismaClient({ adapter })
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth((req) => ({
+  secret: process.env.AUTH_SECRET,
   adapter: PrismaAdapter(prisma),
   providers: [
     Nodemailer({
@@ -120,4 +121,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session
     }
   }
-})
+}));\n
