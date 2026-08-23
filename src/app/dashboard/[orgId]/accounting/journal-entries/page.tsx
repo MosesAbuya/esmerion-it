@@ -1,9 +1,9 @@
 import { prisma } from "@/auth";
 import Link from "next/link";
 
-export default async function JournalEntriesPage({ params }: { params: { orgId: string } }) {
+export default async function JournalEntriesPage({ params }: { params: Promise<{ orgId: string }> }) {
   const entries = await prisma.journalEntry.findMany({
-    where: { organizationId: params.orgId },
+    where: { organizationId: (await params).orgId },
     orderBy: { date: 'desc' },
     include: {
       lines: {

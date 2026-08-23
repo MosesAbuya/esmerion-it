@@ -8,13 +8,13 @@ export default async function DashboardLayout({
   params,
 }: {
   children: ReactNode;
-  params: { orgId: string };
+  params: Promise<{ orgId: string }>;
 }) {
   const session = await auth();
   if (!session?.user) redirect("/api/auth/signin");
 
   const org = await prisma.organization.findUnique({
-    where: { id: params.orgId }
+    where: { id: (await params).orgId }
   });
 
   if (!org) redirect("/dashboard");

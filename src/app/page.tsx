@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import Link from "next/link"
 
 export default async function Home() {
   const session = await auth()
@@ -12,7 +13,12 @@ export default async function Home() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-zinc-500 mt-2">Welcome to Esmerion IT. Select an organization from the top bar to get started.</p>
+        <p className="text-zinc-500 mt-2">
+          Welcome to Esmerion IT. 
+          <Link href="/dashboard" className="text-blue-600 underline font-semibold ml-2">
+            Click here to access the Phase 3 Financial Engine & Organizations Testing Hub!
+          </Link>
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -13,7 +13,7 @@ export async function seedChartOfAccounts(organizationId: string) {
     { code: '1200', name: 'Accounts Receivable', type: 'ASSET' },
     { code: '2000', name: 'Accounts Payable', type: 'LIABILITY' },
     { code: '2100', name: 'Taxes Payable', type: 'LIABILITY' },
-    { code: '3000', name: 'Owner\\'s Equity', type: 'EQUITY' },
+    { code: '3000', name: "Owner's Equity", type: 'EQUITY' },
     { code: '3100', name: 'Retained Earnings', type: 'EQUITY' },
     { code: '4000', name: 'Sales Revenue', type: 'REVENUE' },
     { code: '4100', name: 'Service Revenue', type: 'REVENUE' },

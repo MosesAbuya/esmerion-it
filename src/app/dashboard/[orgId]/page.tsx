@@ -1,8 +1,8 @@
 import { prisma } from "@/auth";
 
-export default async function OrgDashboard({ params }: { params: { orgId: string } }) {
-  const accountCount = await prisma.ledgerAccount.count({ where: { organizationId: params.orgId } });
-  const journalCount = await prisma.journalEntry.count({ where: { organizationId: params.orgId } });
+export default async function OrgDashboard({ params }: { params: Promise<{ orgId: string }> }) {
+  const accountCount = await prisma.ledgerAccount.count({ where: { organizationId: (await params).orgId } });
+  const journalCount = await prisma.journalEntry.count({ where: { organizationId: (await params).orgId } });
 
   return (
     <div>

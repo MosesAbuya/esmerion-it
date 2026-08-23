@@ -1,8 +1,8 @@
 import { prisma } from "@/auth";
 
-export default async function ChartOfAccountsPage({ params }: { params: { orgId: string } }) {
+export default async function ChartOfAccountsPage({ params }: { params: Promise<{ orgId: string }> }) {
   const accounts = await prisma.ledgerAccount.findMany({
-    where: { organizationId: params.orgId },
+    where: { organizationId: (await params).orgId },
     orderBy: { code: 'asc' }
   });
 

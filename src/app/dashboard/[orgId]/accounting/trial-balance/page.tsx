@@ -1,9 +1,9 @@
 import { prisma } from "@/auth";
 
-export default async function TrialBalancePage({ params }: { params: { orgId: string } }) {
+export default async function TrialBalancePage({ params }: { params: Promise<{ orgId: string }> }) {
   // Fetch all accounts with their lines
   const accounts = await prisma.ledgerAccount.findMany({
-    where: { organizationId: params.orgId },
+    where: { organizationId: (await params).orgId },
     include: {
       journalLines: {
         where: {
