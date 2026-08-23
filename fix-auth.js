@@ -1,0 +1,1 @@
+﻿const fs = require('fs'); let code = fs.readFileSync('src/auth.ts', 'utf8'); code = code.replace('export const { handlers, auth, signIn, signOut } = NextAuth({', 'export const { handlers, auth, signIn, signOut } = NextAuth((req) => ({'); code = code.replace(/}\)$/, '}));'); fs.writeFileSync('src/auth.ts', code);
