@@ -1,0 +1,86 @@
+import NextAuth from "next-auth"
+import Nodemailer from "next-auth/providers/nodemailer"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { PrismaClient } from "@prisma/client"
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
+import nodemailer from "nodemailer"
+
+const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_l45aCcbZFAqu@ep-plain-frost-b2dxi9ds-pooler.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+export const prisma = new PrismaClient({ adapter })
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    Nodemailer({
+      server: {
+        host: "dummy",
+        port: 25,
+        auth: { user: "dummy", pass: "dummy" },
+      },
+      from: "dummy@example.com",
+      async sendVerificationRequest(params) {
+        const { identifier, url, provider } = params
+        
+        // Fetch SMTP config from DB
+        const configRecord = await prisma.systemConfig.findUnique({
+          where: { key: 'SMTP_CONFIG' }
+        })
+        
+        if (!configRecord) {
+          console.log("\n=======================================================")
+          console.log("⚠️ SMTP Config missing in DB. Printing Magic Link to console:")
+          console.log(url)
+          console.log("=======================================================\n")
+          return
+        }
+        
+        const smtpConfig = configRecord.value as any
+        const transport = nodemailer.createTransport({
+          host: smtpConfig.host,
+          port: smtpConfig.port,
+          secure: smtpConfig.port === 465,
+          auth: {
+            user: smtpConfig.user,
+            pass: smtpConfig.pass,
+          },
+        })
+        
+        const result = await transport.sendMail({
+          to: identifier,
+          from: smtpConfig.from || provider.from,
+          subject: `Sign in to Esmerion IT`,
+          text: `Sign in link: ${url}`,
+          html: `<p>Click here to sign in: <a href="${url}">${url}</a></p>`,
+        })
+        
+        const failed = result.rejected.concat(result.pending).filter(Boolean)
+        if (failed.length) {
+          throw new Error(`Email(s) (${failed.join(", ")}) could not be sent`)
+        }
+      },
+    }),
+  ],
+  callbacks: {
+    async session({ session, user }) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        include: {
+          memberships: {
+            include: { organization: true }
+          }
+        }
+      })
+      
+      if (dbUser) {
+        // @ts-ignore
+        session.user.memberships = dbUser.memberships
+        // @ts-ignore
+        session.user.isSystemSuperadmin = dbUser.isSystemSuperadmin
+      }
+      return session
+    }
+  }
+})
