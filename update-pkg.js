@@ -1,0 +1,1 @@
+﻿const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json')); pkg.scripts['build:next'] = pkg.scripts.build; pkg.scripts.build = 'opennextjs-cloudflare build'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
