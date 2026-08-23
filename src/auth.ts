@@ -121,4 +121,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => ({
       return session
     }
   }
-}));\n
+}));
