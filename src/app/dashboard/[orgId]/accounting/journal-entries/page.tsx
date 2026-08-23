@@ -34,7 +34,7 @@ export default async function JournalEntriesPage({ params }: { params: Promise<{
               </div>
               <div className="flex gap-4 items-center">
                 <span className="text-sm font-medium">Currency: {entry.currency} (@{Number(entry.exchangeRate).toFixed(2)})</span>
-                <span className={\`px-2 py-1 rounded text-xs \${entry.status === 'POSTED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}\`}>
+                <span className={`px-2 py-1 rounded text-xs \${entry.status === 'POSTED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                   {entry.status}
                 </span>
               </div>

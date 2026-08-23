@@ -32,7 +32,7 @@ export default async function ChartOfAccountsPage({ params }: { params: Promise<
                 <td className="p-4 text-gray-500">{acc.type}</td>
                 <td className="p-4 text-gray-500">{acc.currency || "Any"}</td>
                 <td className="p-4 text-right">
-                  <span className={\`px-2 py-1 rounded text-xs \${acc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}\`}>
+                  <span className={`px-2 py-1 rounded text-xs \${acc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {acc.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </td>
