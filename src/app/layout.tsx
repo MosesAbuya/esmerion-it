@@ -64,7 +64,8 @@ export default async function RootLayout({
                     {(session.user as any)?.isSystemSuperadmin && (
                       <>
                         <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-8 mb-4">Superadmin</div>
-                        <a href="#" className="block rounded-md px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100">System Settings</a>
+                        <a href="/superadmin/users" className="block rounded-md px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100">User Directory</a>
+                        <a href="/superadmin/settings" className="block rounded-md px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100">System Settings</a>
                       </>
                     )}
                   </nav>

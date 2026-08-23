@@ -63,6 +63,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  events: {
+    async signIn({ user }) {
+      if (!user.email) return
+
+      // Find pending invitations for this email
+      const pendingInvites = await prisma.organizationInvitation.findMany({
+        where: { email: user.email, status: 'PENDING' }
+      })
+
+      for (const invite of pendingInvites) {
+        // Create membership
+        await prisma.membership.upsert({
+          where: {
+            userId_organizationId: {
+              userId: user.id!,
+              organizationId: invite.organizationId
+            }
+          },
+          update: { role: invite.role, status: 'ACTIVE' },
+          create: {
+            userId: user.id!,
+            organizationId: invite.organizationId,
+            role: invite.role,
+            status: 'ACTIVE'
+          }
+        })
+
+        // Mark invite accepted
+        await prisma.organizationInvitation.update({
+          where: { id: invite.id },
+          data: { status: 'ACCEPTED' }
+        })
+      }
+    }
+  },
   callbacks: {
     async session({ session, user }) {
       const dbUser = await prisma.user.findUnique({
