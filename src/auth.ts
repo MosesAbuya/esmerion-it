@@ -1,7 +1,7 @@
 import NextAuth from "next-auth"
 import Nodemailer from "next-auth/providers/nodemailer"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client/edge"
 import { PrismaNeon } from "@prisma/adapter-neon"
 import { Pool, neonConfig } from "@neondatabase/serverless"
 import ws from "ws"
