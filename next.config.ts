@@ -1,11 +1,1 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  experimental: {
-    optimizePackageImports: ["lucide-react", "@base-ui/react"],
-  },
-};
-
-export default nextConfig;
-
-import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());
+﻿import type { NextConfig } from 'next'; const nextConfig: NextConfig = { serverExternalPackages: ['@prisma/client', '@prisma/adapter-neon'], experimental: { optimizePackageImports: ['lucide-react', '@base-ui/react'] } }; export default nextConfig; import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());

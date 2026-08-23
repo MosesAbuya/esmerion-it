@@ -7,39 +7,45 @@ datasource db {
 }
 
 model Organization {
-  id                   String               @id @default(cuid())
+  id                   String                   @id @default(cuid())
   name                 String
-  slug                 String               @unique
+  slug                 String                   @unique
+  baseCurrency         String                   @default("KES")
   parentOrganizationId String?
-  parentOrganization   Organization?        @relation("OrganizationHierarchy", fields: [parentOrganizationId], references: [id])
-  childOrganizations   Organization[]       @relation("OrganizationHierarchy")
-  type                 String               @default("INTERNAL") // INTERNAL | SUBSCRIBER
+  parentOrganization   Organization?            @relation("OrganizationHierarchy", fields: [parentOrganizationId], references: [id])
+  childOrganizations   Organization[]           @relation("OrganizationHierarchy")
+  type                 String                   @default("INTERNAL") // INTERNAL | SUBSCRIBER
   plan                 String?
   settings             Json?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
   memberships          Membership[]
   modules              OrganizationModule[]
   roles                Role[]
   invitations          OrganizationInvitation[]
   auditLogs            AuditLog[]
+  ledgerAccounts       LedgerAccount[]
+  journalEntries       JournalEntry[]
+  journalLines         JournalLine[]
 }
 
 model User {
-  id                 String       @id @default(cuid())
+  id                 String                   @id @default(cuid())
   name               String?
-  email              String       @unique
+  email              String                   @unique
   emailVerified      DateTime?
   image              String?
-  isSystemSuperadmin Boolean      @default(false)
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  isSystemSuperadmin Boolean                  @default(false)
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
   memberships        Membership[]
   accounts           Account[]
   sessions           Session[]
   Authenticator      Authenticator[]
   invitationsSent    OrganizationInvitation[]
   auditLogs          AuditLog[]
+  journalsCreated    JournalEntry[]           @relation("JournalCreatedBy")
+  journalsPosted     JournalEntry[]           @relation("JournalPostedBy")
 }
 
 model Account {
@@ -114,7 +120,7 @@ model Membership {
 
 model Role {
   id             String        @id @default(cuid())
-  organizationId String?       // nullable for system default
+  organizationId String? // nullable for system default
   name           String
   permissions    Json
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -146,34 +152,100 @@ model SystemConfig {
 }
 
 model OrganizationInvitation {
-  id             String       @id @default(cuid())
+  id             String   @id @default(cuid())
   email          String
   organizationId String
-  role           String       @default("MEMBER")
-  token          String       @unique
+  role           String   @default("MEMBER")
+  token          String   @unique
   expiresAt      DateTime
   inviterId      String
-  status         String       @default("PENDING") // PENDING, ACCEPTED, EXPIRED
+  status         String   @default("PENDING") // PENDING, ACCEPTED, EXPIRED
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([email, organizationId])
 }
 
 model AuditLog {
-  id             String       @id @default(cuid())
-  userId         String?      
-  organizationId String?      
+  id             String  @id @default(cuid())
+  userId         String?
+  organizationId String?
   action         String
   resource       String
   details        Json?
-  
-  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  createdAt      DateTime     @default(now())
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model LedgerAccount {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  type           String // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  parentId       String?
+  currency       String?
+  isIntercompany Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent       LedgerAccount?  @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children     LedgerAccount[] @relation("AccountHierarchy")
+  journalLines JournalLine[]
+
+  @@unique([organizationId, code])
+}
+
+model JournalEntry {
+  id             String    @id @default(cuid())
+  organizationId String
+  date           DateTime
+  description    String
+  sourceType     String // MANUAL, RECEIPT, INVOICE, TENDER_PAYMENT, AD_SALE, PAYROLL, TRANSFER
+  sourceId       String?
+  currency       String    @default("KES")
+  exchangeRate   Decimal   @default(1.0)
+  status         String    @default("DRAFT") // DRAFT, POSTED, VOIDED
+  reversalOfId   String?
+  createdById    String?
+  postedById     String?
+  postedAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?          @relation("JournalCreatedBy", fields: [createdById], references: [id])
+  postedBy     User?          @relation("JournalPostedBy", fields: [postedById], references: [id])
+  reversalOf   JournalEntry?  @relation("JournalReversals", fields: [reversalOfId], references: [id])
+  reversals    JournalEntry[] @relation("JournalReversals")
+  lines        JournalLine[]
+
+  @@index([organizationId, date])
+  @@index([sourceType, sourceId])
+}
+
+model JournalLine {
+  id             String   @id @default(cuid())
+  journalEntryId String
+  accountId      String
+  organizationId String // Denormalized for tenant isolation
+  debit          Decimal  @default(0) // Base currency
+  credit         Decimal  @default(0) // Base currency
+  txDebit        Decimal  @default(0) // Transaction currency
+  txCredit       Decimal  @default(0) // Transaction currency
+  description    String?
+  createdAt      DateTime @default(now())
+
+  journalEntry JournalEntry  @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account      LedgerAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
