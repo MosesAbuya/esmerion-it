@@ -32,6 +32,12 @@ export default async function DashboardLayout({
           <Link href={`/dashboard/${org.id}/accounting/chart-of-accounts`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Chart of Accounts</Link>
           <Link href={`/dashboard/${org.id}/accounting/journal-entries`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Journal Entries</Link>
           <Link href={`/dashboard/${org.id}/accounting/trial-balance`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Trial Balance</Link>
+        
+          <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Operations</div>
+          <Link href={`/dashboard/${org.id}/crm`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">CRM</Link>
+          <Link href={`/dashboard/${org.id}/projects`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Projects</Link>
+          <Link href={`/dashboard/${org.id}/tenders`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Tenders</Link>
+          <Link href={`/dashboard/${org.id}/assets`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Assets</Link>
         </nav>
       </aside>
       <main className="flex-1 overflow-auto p-8">

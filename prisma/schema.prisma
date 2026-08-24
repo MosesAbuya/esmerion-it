@@ -27,6 +27,10 @@ model Organization {
   ledgerAccounts       LedgerAccount[]
   journalEntries       JournalEntry[]
   journalLines         JournalLine[]
+  clients              Client[]
+  projects             Project[]
+  tenders              Tender[]
+  assets               Asset[]
 }
 
 model User {
@@ -46,6 +50,8 @@ model User {
   auditLogs          AuditLog[]
   journalsCreated    JournalEntry[]           @relation("JournalCreatedBy")
   journalsPosted     JournalEntry[]           @relation("JournalPostedBy")
+  tasks              Task[]
+  assets             Asset[]
 }
 
 model Account {
@@ -201,6 +207,10 @@ model LedgerAccount {
   parent       LedgerAccount?  @relation("AccountHierarchy", fields: [parentId], references: [id])
   children     LedgerAccount[] @relation("AccountHierarchy")
   journalLines JournalLine[]
+  clients      Client[]
+  projects     Project[]
+  tenders      Tender[]
+  assets       Asset[]
 
   @@unique([organizationId, code])
 }
@@ -248,4 +258,104 @@ model JournalLine {
   journalEntry JournalEntry  @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
   account      LedgerAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// === PHASE 4: MALSHE MEDIA OPERATIONS ===
+
+model Client {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  industry       String?
+  status         String   @default("LEAD") // LEAD, ACTIVE, FORMER
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contacts        Contact[]
+  projects        Project[]
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  clientId  String
+  name      String
+  email     String?
+  phone     String?
+  role      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id             String    @id @default(cuid())
+  organizationId String
+  clientId       String?
+  name           String
+  description    String?
+  status         String    @default("PLANNING") // PLANNING, IN_PROGRESS, REVIEW, COMPLETED
+  startDate      DateTime?
+  dueDate        DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client          Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  tasks           Task[]
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
+}
+
+model Task {
+  id           String    @id @default(cuid())
+  projectId    String
+  title        String
+  status       String    @default("TODO") // TODO, DOING, DONE
+  assignedToId String?
+  dueDate      DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedTo User?   @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+}
+
+model Tender {
+  id                 String    @id @default(cuid())
+  organizationId     String
+  title              String
+  issuingAuthority   String
+  referenceNumber    String?
+  status             String    @default("PREPARING") // EVALUATING, PREPARING, SUBMITTED, WON, LOST, CANCELLED
+  estimatedValue     Decimal?  @db.Decimal(19, 4)
+  submissionDeadline DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
+}
+
+model Asset {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  category       String // IT, FURNITURE, CAMERA_GEAR, VEHICLE
+  serialNumber   String?
+  status         String    @default("AVAILABLE") // AVAILABLE, ASSIGNED, MAINTENANCE, RETIRED
+  purchaseDate   DateTime?
+  purchaseValue  Decimal?  @db.Decimal(19, 4)
+  assignedToId   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignedTo      User?          @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
 }
