@@ -14,6 +14,7 @@ export default async function DashboardLayout({
   if (!session?.user) redirect("/api/auth/signin");
 
   const org = await prisma.organization.findUnique({
+    include: { childOrganizations: true },
     where: { id: (await params).orgId }
   });
 
@@ -44,6 +45,13 @@ export default async function DashboardLayout({
           <Link href={`/dashboard/${org.id}/pr`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Secretariat & PR</Link>
           <Link href={`/dashboard/${org.id}/ad-sales`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Ad Sales</Link>
           <Link href={`/dashboard/${org.id}/subscribers`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Subscribers</Link>
+        
+          {org.childOrganizations.length > 0 && (
+            <>
+              <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Group Intelligence</div>
+              <Link href={`/dashboard/${org.id}/group/dashboard`} className="block px-4 py-2 text-sm rounded hover:bg-gray-50">Consolidated Financials</Link>
+            </>
+          )}
         </nav>
       </aside>
       <main className="flex-1 overflow-auto p-8">

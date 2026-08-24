@@ -36,6 +36,8 @@ model Organization {
   mediaContacts        MediaContact[]
   adCampaigns          AdCampaign[]
   subscribers          Subscriber[]
+  allocationsAsParent  AllocationRule[]         @relation("AllocationRuleParent")
+  allocationsAsChild   AllocationRule[]         @relation("AllocationRuleChild")
 }
 
 model User {
@@ -209,19 +211,21 @@ model LedgerAccount {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  parent        LedgerAccount?  @relation("AccountHierarchy", fields: [parentId], references: [id])
-  children      LedgerAccount[] @relation("AccountHierarchy")
-  journalLines  JournalLine[]
-  clients       Client[]
-  projects      Project[]
-  tenders       Tender[]
-  assets        Asset[]
-  articles      Article[]
-  pressReleases PressRelease[]
-  mediaContacts MediaContact[]
-  adCampaigns   AdCampaign[]
-  subscribers   Subscriber[]
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent         LedgerAccount?   @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children       LedgerAccount[]  @relation("AccountHierarchy")
+  journalLines   JournalLine[]
+  clients        Client[]
+  projects       Project[]
+  tenders        Tender[]
+  assets         Asset[]
+  articles       Article[]
+  pressReleases  PressRelease[]
+  mediaContacts  MediaContact[]
+  adCampaigns    AdCampaign[]
+  subscribers    Subscriber[]
+  allocationsOut AllocationRule[] @relation("SourceAccount")
+  allocationsIn  AllocationRule[] @relation("TargetAccount")
 
   @@unique([organizationId, code])
 }
@@ -466,4 +470,23 @@ model Subscriber {
   organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
   ledgerAccountId String?
+}
+
+// === PHASE 6: CONSOLIDATION & GROUP INTELLIGENCE ===
+
+model AllocationRule {
+  id                   String   @id @default(cuid())
+  parentOrganizationId String
+  childOrganizationId  String
+  name                 String
+  percentage           Decimal  @db.Decimal(5, 2) // e.g. 30.00
+  sourceAccountId      String // LedgerAccount in Parent
+  targetAccountId      String // LedgerAccount in Child
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  parentOrganization Organization  @relation("AllocationRuleParent", fields: [parentOrganizationId], references: [id], onDelete: Cascade)
+  childOrganization  Organization  @relation("AllocationRuleChild", fields: [childOrganizationId], references: [id], onDelete: Cascade)
+  sourceAccount      LedgerAccount @relation("SourceAccount", fields: [sourceAccountId], references: [id], onDelete: Cascade)
+  targetAccount      LedgerAccount @relation("TargetAccount", fields: [targetAccountId], references: [id], onDelete: Cascade)
 }
