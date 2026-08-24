@@ -35,11 +35,11 @@ export default async function TendersPage({ params }: { params: Promise<{ orgId:
                 <td className="p-4 text-gray-600">{tender.submissionDeadline ? tender.submissionDeadline.toLocaleDateString() : 'TBD'}</td>
                 <td className="p-4 font-mono">{tender.estimatedValue ? Number(tender.estimatedValue).toLocaleString() : '-'}</td>
                 <td className="p-4 text-right">
-                  <span className={\`px-2 py-1 rounded text-xs \${
+                  <span className={`px-2 py-1 rounded text-xs \${
                     tender.status === 'WON' ? 'bg-green-100 text-green-800' :
                     tender.status === 'LOST' ? 'bg-red-100 text-red-800' :
                     'bg-yellow-100 text-yellow-800'
-                  }\`}>
+                  }`}>
                     {tender.status}
                   </span>
                 </td>

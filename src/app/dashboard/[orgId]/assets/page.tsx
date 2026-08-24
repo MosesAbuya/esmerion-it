@@ -36,11 +36,11 @@ export default async function AssetsPage({ params }: { params: Promise<{ orgId: 
                 <td className="p-4 text-gray-500 font-mono text-xs">{asset.serialNumber || '-'}</td>
                 <td className="p-4 text-gray-600">{asset.assignedTo?.name || asset.assignedTo?.email || 'Unassigned'}</td>
                 <td className="p-4 text-right">
-                  <span className={\`px-2 py-1 rounded text-xs \${
+                  <span className={`px-2 py-1 rounded text-xs \${
                     asset.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
                     asset.status === 'ASSIGNED' ? 'bg-blue-100 text-blue-800' :
                     'bg-gray-100 text-gray-800'
-                  }\`}>
+                  }`}>
                     {asset.status}
                   </span>
                 </td>

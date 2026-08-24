@@ -33,7 +33,7 @@ export default async function CRMPage({ params }: { params: Promise<{ orgId: str
                 <td className="p-4 font-medium">{client.name}</td>
                 <td className="p-4 text-gray-600">{client.industry || '-'}</td>
                 <td className="p-4">
-                  <span className={\`px-2 py-1 rounded text-xs \${client.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}\`}>
+                  <span className={`px-2 py-1 rounded text-xs \${client.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                     {client.status}
                   </span>
                 </td>
