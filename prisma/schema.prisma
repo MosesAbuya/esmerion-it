@@ -31,6 +31,11 @@ model Organization {
   projects             Project[]
   tenders              Tender[]
   assets               Asset[]
+  articles             Article[]
+  pressReleases        PressRelease[]
+  mediaContacts        MediaContact[]
+  adCampaigns          AdCampaign[]
+  subscribers          Subscriber[]
 }
 
 model User {
@@ -52,6 +57,7 @@ model User {
   journalsPosted     JournalEntry[]           @relation("JournalPostedBy")
   tasks              Task[]
   assets             Asset[]
+  articles           Article[]
 }
 
 model Account {
@@ -203,14 +209,19 @@ model LedgerAccount {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  parent       LedgerAccount?  @relation("AccountHierarchy", fields: [parentId], references: [id])
-  children     LedgerAccount[] @relation("AccountHierarchy")
-  journalLines JournalLine[]
-  clients      Client[]
-  projects     Project[]
-  tenders      Tender[]
-  assets       Asset[]
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent        LedgerAccount?  @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children      LedgerAccount[] @relation("AccountHierarchy")
+  journalLines  JournalLine[]
+  clients       Client[]
+  projects      Project[]
+  tenders       Tender[]
+  assets        Asset[]
+  articles      Article[]
+  pressReleases PressRelease[]
+  mediaContacts MediaContact[]
+  adCampaigns   AdCampaign[]
+  subscribers   Subscriber[]
 
   @@unique([organizationId, code])
 }
@@ -274,6 +285,7 @@ model Client {
   organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   contacts        Contact[]
   projects        Project[]
+  adCampaigns     AdCampaign[]
   ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
   ledgerAccountId String?
 }
@@ -356,6 +368,102 @@ model Asset {
 
   organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   assignedTo      User?          @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
+}
+
+// === PHASE 5: TURNINGPOINT OPERATIONS ===
+
+model Article {
+  id             String    @id @default(cuid())
+  organizationId String
+  title          String
+  content        String?
+  authorId       String?
+  status         String    @default("DRAFT") // DRAFT, IN_REVIEW, APPROVED, PUBLISHED
+  publishDate    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  author          User?          @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
+}
+
+model PressRelease {
+  id               String    @id @default(cuid())
+  organizationId   String
+  title            String
+  content          String?
+  distributionList String?
+  status           String    @default("DRAFT") // DRAFT, DISTRIBUTED
+  distributedAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
+}
+
+model MediaContact {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  outlet         String?
+  email          String?
+  phone          String?
+  category       String? // TV, PRINT, RADIO, DIGITAL
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
+}
+
+model AdCampaign {
+  id             String   @id @default(cuid())
+  organizationId String
+  clientId       String
+  campaignName   String
+  budget         Decimal? @db.Decimal(19, 4)
+  status         String   @default("PITCHED") // PITCHED, ACTIVE, COMPLETED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client          Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  placements      AdPlacement[]
+  ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
+  ledgerAccountId String?
+}
+
+model AdPlacement {
+  id          String    @id @default(cuid())
+  campaignId  String
+  platform    String // PRINT, WEB, SOCIAL
+  publishDate DateTime?
+  cost        Decimal?  @db.Decimal(19, 4)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  campaign AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+model Subscriber {
+  id               String    @id @default(cuid())
+  organizationId   String
+  name             String
+  email            String
+  subscriptionTier String    @default("BASIC") // BASIC, PREMIUM, CORPORATE
+  status           String    @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED
+  expiresAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   ledgerAccount   LedgerAccount? @relation(fields: [ledgerAccountId], references: [id])
   ledgerAccountId String?
 }
